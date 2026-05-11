@@ -14,7 +14,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-zinc-950">
-      <Sidebar />
+      <Sidebar userRole={session.role as Role} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar
           user={{

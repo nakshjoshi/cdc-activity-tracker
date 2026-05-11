@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const createUserSchema = z.object({
@@ -90,7 +90,7 @@ export const createFollowUpSchema = z.object({
 
 export const createAlumniSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  batch: z.number().int().min(2000).max(2030),
+  batch: z.coerce.number().int().min(2000).max(2030),
   branch: z.string().min(1, "Branch is required"),
   currentCompany: z.string().optional(),
   designation: z.string().optional(),

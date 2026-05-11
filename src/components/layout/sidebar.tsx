@@ -5,51 +5,41 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Building2, Users, GraduationCap,
-  Calendar, Bell, Settings, ChevronLeft, ChevronRight,
-  Activity, BookOpen,
+  Calendar, Settings, ChevronLeft, ChevronRight,
+  Activity, BarChart3,
 } from "lucide-react";
 import { useState } from "react";
+import type { Role } from "@prisma/client";
 
-const NAV_ITEMS = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    label: "Companies",
-    href: "/dashboard/companies",
-    icon: Building2,
-  },
-  {
-    label: "Alumni",
-    href: "/dashboard/alumni",
-    icon: GraduationCap,
-  },
-  {
-    label: "Follow-Ups",
-    href: "/dashboard/followups",
-    icon: Calendar,
-  },
-  {
-    label: "Activities",
-    href: "/dashboard/activities",
-    icon: Activity,
-  },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+  roles?: Role[];
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard",  href: "/dashboard",            icon: LayoutDashboard, exact: true },
+  { label: "Companies",  href: "/dashboard/companies",  icon: Building2 },
+  { label: "Alumni",     href: "/dashboard/alumni",     icon: GraduationCap },
+  { label: "Follow-Ups", href: "/dashboard/followups",  icon: Calendar },
+  { label: "Activities", href: "/dashboard/activities", icon: Activity },
   {
     label: "Users",
     href: "/dashboard/users",
     icon: Users,
+    roles: ["ADMIN"] as Role[],
   },
   {
     label: "Reports",
     href: "/dashboard/reports",
-    icon: BookOpen,
+    icon: BarChart3,
+    roles: ["ADMIN", "CDC_CHAIRMAN", "CDC_HEAD", "FACULTY_COORDINATOR"] as Role[],
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ userRole }: { userRole?: Role }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -95,7 +85,9 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter(
+            (item) => !item.roles || (userRole && item.roles.includes(userRole))
+          ).map((item) => {
             const Icon = item.icon;
             const active = item.exact
               ? pathname === item.href

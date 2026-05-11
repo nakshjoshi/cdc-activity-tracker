@@ -310,5 +310,6 @@ export async function completeFollowUpAction(followUpId: string) {
   });
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/followups");
   return { success: true };
 }

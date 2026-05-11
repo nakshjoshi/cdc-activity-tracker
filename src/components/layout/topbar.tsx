@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Bell, Search, Sun, Moon, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getInitials, ROLE_CONFIG } from "@/lib/utils";
@@ -93,10 +95,14 @@ export function Topbar({ user }: TopbarProps) {
                 <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">{user.name}</p>
                 <p className="text-xs text-gray-500 dark:text-zinc-400">{user.email}</p>
               </div>
-              <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800">
+              <Link
+                href="/dashboard/settings"
+                onClick={() => setMenuOpen(false)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
                 <User className="h-3.5 w-3.5" />
-                Profile
-              </button>
+                Profile & Settings
+              </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"

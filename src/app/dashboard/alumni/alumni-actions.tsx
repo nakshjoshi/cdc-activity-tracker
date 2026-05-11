@@ -38,10 +38,7 @@ export function AlumniActions({ session }: { session: SessionPayload | null }) {
 
   const onSubmit = (data: CreateAlumniInput) => {
     startTransition(async () => {
-      const result = await createAlumniAction({
-        ...data,
-        batch: Number(data.batch),
-      });
+      const result = await createAlumniAction(data);
       if (result.error) {
         toast.error(result.error);
       } else {
