@@ -1,0 +1,389 @@
+// ============================================================
+// TNP Tracker - Production Prisma Schema
+// Event-driven, fully auditable CRM for Training & Placement
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  CDC_CHAIRMAN
+  CDC_HEAD
+  FACULTY_COORDINATOR
+  STUDENT_COORDINATOR
+}
+
+enum CompanyStatus {
+  LEAD_FOUND
+  COLD_OUTREACH_PENDING
+  COLD_EMAIL_SENT
+  FOLLOWUP_PENDING
+  FOLLOWUP_DONE
+  INTERESTED
+  PPT_SCHEDULED
+  OA_SCHEDULED
+  INTERVIEW_SCHEDULED
+  HIRING_IN_PROGRESS
+  OFFER_RELEASED
+  REJECTED
+  NO_RESPONSE
+  ON_HOLD
+  CLOSED
+}
+
+enum CompanyType {
+  PRODUCT
+  SERVICE
+  STARTUP
+  MNC
+  PSU
+  NGO
+  CONSULTANCY
+  FINTECH
+  EDTECH
+  HEALTHTECH
+  OTHER
+}
+
+enum ActivityType {
+  EMAIL
+  CALL
+  WHATSAPP
+  LINKEDIN
+  MEETING
+  PPT
+  FOLLOWUP
+  OA_DISCUSSION
+  INTERVIEW_COORDINATION
+  INTERNAL_DISCUSSION
+  NOTE
+}
+
+enum AlumniStatus {
+  NOT_CONTACTED
+  CONTACTED
+  RESPONDED
+  INTERESTED
+  REFERRED
+  NOT_INTERESTED
+  INACTIVE
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum FollowUpType {
+  EMAIL
+  CALL
+  WHATSAPP
+  MEETING
+  OTHER
+}
+
+// ─────────────────────────────────────────────
+// USER & AUTH
+// WHY: Central auth table. Soft-delete via isActive.
+//      Roles drive all RBAC across the system.
+// ─────────────────────────────────────────────
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  password   String   // bcrypt hashed
+  role       Role     @default(STUDENT_COORDINATOR)
+  phone      String?
+  department String?
+  year       Int?
+  avatarUrl  String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime? // soft delete
+
+  // Relations
+  assignedCompanies    Company[]       @relation("AssignedCoordinator")
+  createdCompanies     Company[]       @relation("CreatedBy")
+  activities           Activity[]      @relation("ActivityCreatedBy")
+  statusLogs           CompanyStatusLog[] @relation("StatusChangedBy")
+  followUps            FollowUp[]      @relation("FollowUpCreatedBy")
+  assignedAlumni       Alumni[]        @relation("AlumniAssignedCoordinator")
+  alumniActivities     AlumniActivity[] @relation("AlumniActivityCreatedBy")
+  auditLogs            AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// ─────────────────────────────────────────────
+// COMPANY
+// WHY: Core entity. Every company that TNP interacts with
+//      gets a record here. Status stored at entity level
+//      for quick queries, but full history in CompanyStatusLog.
+// ─────────────────────────────────────────────
+
+model Company {
+  id                  String        @id @default(cuid())
+  companyName         String
+  domain              String?
+  website             String?
+  linkedin            String?
+  companyType         CompanyType?
+  industry            String?
+  city                String?
+  state               String?
+  country             String        @default("India")
+  currentStatus       CompanyStatus @default(LEAD_FOUND)
+  description         String?       @db.Text
+  notes               String?       @db.Text
+
+  // Soft delete
+  isDeleted           Boolean       @default(false)
+  deletedAt           DateTime?
+
+  // Relations
+  assignedCoordinatorId String?
+  assignedCoordinator   User?       @relation("AssignedCoordinator", fields: [assignedCoordinatorId], references: [id])
+
+  createdById         String
+  createdBy           User          @relation("CreatedBy", fields: [createdById], references: [id])
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Child relations
+  contacts            Contact[]
+  activities          Activity[]
+  statusLogs          CompanyStatusLog[]
+  followUps           FollowUp[]
+
+  @@index([currentStatus])
+  @@index([companyName])
+  @@index([domain])
+  @@index([assignedCoordinatorId])
+  @@index([createdById])
+  @@index([isDeleted])
+}
+
+// ─────────────────────────────────────────────
+// CONTACT
+// WHY: One company → many contacts (HR, Founder, TA, etc.)
+//      isPrimary flags the main POC.
+// ─────────────────────────────────────────────
+
+model Contact {
+  id          String   @id @default(cuid())
+  name        String
+  designation String?
+  email       String?
+  phone       String?
+  linkedin    String?
+  isPrimary   Boolean  @default(false)
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([email])
+}
+
+// ─────────────────────────────────────────────
+// COMPANY STATUS LOG
+// WHY: THIS IS THE CORE AUDIT TABLE.
+//      Every status transition is immutably recorded.
+//      Enables full timeline reconstruction and analytics.
+//      Think of this as the "event store" for company state.
+// ─────────────────────────────────────────────
+
+model CompanyStatusLog {
+  id         String        @id @default(cuid())
+  oldStatus  CompanyStatus?
+  newStatus  CompanyStatus
+  notes      String?       @db.Text
+  changedAt  DateTime      @default(now())
+
+  companyId  String
+  company    Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  changedById String
+  changedBy   User         @relation("StatusChangedBy", fields: [changedById], references: [id])
+
+  @@index([companyId])
+  @@index([changedAt])
+  @@index([newStatus])
+}
+
+// ─────────────────────────────────────────────
+// ACTIVITY (Company)
+// WHY: Every single interaction with a company is logged.
+//      Email, calls, WhatsApp, meetings - all recorded.
+//      nextFollowUpDate drives the follow-up system.
+//      This is the "communication timeline" CRMs are built on.
+// ─────────────────────────────────────────────
+
+model Activity {
+  id              String       @id @default(cuid())
+  type            ActivityType
+  summary         String
+  notes           String?      @db.Text
+  nextAction      String?
+  nextFollowUpDate DateTime?
+  attachmentUrl   String?
+  createdAt       DateTime     @default(now())
+
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdById     String
+  createdBy       User         @relation("ActivityCreatedBy", fields: [createdById], references: [id])
+
+  @@index([companyId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([nextFollowUpDate])
+}
+
+// ─────────────────────────────────────────────
+// FOLLOW-UP
+// WHY: Explicit follow-up tracking separate from activities.
+//      Enables dashboard widgets: overdue / today / upcoming.
+//      reminderSent prevents duplicate notifications.
+// ─────────────────────────────────────────────
+
+model FollowUp {
+  id            String         @id @default(cuid())
+  followUpDate  DateTime
+  followUpType  FollowUpType   @default(EMAIL)
+  subject       String?
+  notes         String?        @db.Text
+  status        FollowUpStatus @default(PENDING)
+  reminderSent  Boolean        @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  companyId     String
+  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdById   String
+  createdBy     User           @relation("FollowUpCreatedBy", fields: [createdById], references: [id])
+
+  @@index([companyId])
+  @@index([followUpDate])
+  @@index([status])
+  @@index([reminderSent])
+}
+
+// ─────────────────────────────────────────────
+// ALUMNI
+// WHY: Alumni outreach is SEPARATE from company outreach.
+//      Alumni are individuals (not organizations).
+//      They can refer companies, connect HR, or directly recruit.
+//      willingToHelp and referralCapability gate who to reach out to.
+// ─────────────────────────────────────────────
+
+model Alumni {
+  id                 String       @id @default(cuid())
+  name               String
+  batch              Int          // graduation year e.g. 2021
+  branch             String       // CS, ME, EE etc.
+  currentCompany     String?
+  designation        String?
+  linkedin           String?
+  email              String?
+  phone              String?
+  city               String?
+  willingToHelp      Boolean      @default(false)
+  referralCapability Boolean      @default(false)
+  currentStatus      AlumniStatus @default(NOT_CONTACTED)
+  notes              String?      @db.Text
+
+  isDeleted          Boolean      @default(false)
+  deletedAt          DateTime?
+
+  assignedCoordinatorId String?
+  assignedCoordinator   User?    @relation("AlumniAssignedCoordinator", fields: [assignedCoordinatorId], references: [id])
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  activities         AlumniActivity[]
+
+  @@index([currentStatus])
+  @@index([batch])
+  @@index([branch])
+  @@index([currentCompany])
+  @@index([willingToHelp])
+}
+
+// ─────────────────────────────────────────────
+// ALUMNI ACTIVITY
+// WHY: Mirrors the company activity system but for alumni.
+//      Tracks referrals, calls, hiring discussions, etc.
+// ─────────────────────────────────────────────
+
+model AlumniActivity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  summary     String
+  notes       String?      @db.Text
+  nextAction  String?
+  nextFollowUpDate DateTime?
+  createdAt   DateTime     @default(now())
+
+  alumniId    String
+  alumni      Alumni       @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User         @relation("AlumniActivityCreatedBy", fields: [createdById], references: [id])
+
+  @@index([alumniId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// WHY: System-wide audit trail.
+//      Records who did what, when, on which entity.
+//      Essential for compliance and debugging.
+//      Immutable append-only log.
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  entity     String   // Company, Alumni, User, etc.
+  entityId   String?
+  oldData    Json?    // snapshot before change
+  newData    Json?    // snapshot after change
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+}
