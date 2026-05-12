@@ -80,3 +80,43 @@ export async function deleteAlumniAction(alumniId: string) {
   revalidatePath("/dashboard/alumni");
   return { success: true };
 }
+
+export async function updateAlumniAction(alumniId: string, data: unknown) {
+  const session = await getSession();
+  if (!session) return { error: "Unauthorized" };
+
+  const parsed = createAlumniSchema.safeParse(data);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  await prisma.alumni.update({
+    where: { id: alumniId },
+    data: {
+      ...parsed.data,
+      email: parsed.data.email || null,
+      linkedin: parsed.data.linkedin || null,
+    },
+  });
+
+  revalidatePath(`/dashboard/alumni/${alumniId}`);
+  revalidatePath("/dashboard/alumni");
+  return { success: true };
+}
+
+export async function assignAlumniCoordinatorAction(
+  alumniId: string,
+  coordinatorId: string | null
+) {
+  const session = await getSession();
+  if (!session || !["ADMIN", "CDC_HEAD"].includes(session.role)) {
+    return { error: "Unauthorized" };
+  }
+
+  await prisma.alumni.update({
+    where: { id: alumniId },
+    data: { assignedCoordinatorId: coordinatorId },
+  });
+
+  revalidatePath(`/dashboard/alumni/${alumniId}`);
+  revalidatePath("/dashboard/alumni");
+  return { success: true };
+}

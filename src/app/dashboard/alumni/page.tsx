@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ALUMNI_STATUS_CONFIG, formatDate, getInitials } from "@/lib/utils";
 import { GraduationCap, ExternalLink, Heart, Users } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
@@ -88,6 +89,7 @@ export default async function AlumniPage({
                     {h}
                   </th>
                 ))}
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
@@ -108,9 +110,12 @@ export default async function AlumniPage({
                             {getInitials(a.name)}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-zinc-100">
+                            <Link
+                              href={`/dashboard/alumni/${a.id}`}
+                              className="text-sm font-semibold text-zinc-100 hover:text-orange-400"
+                            >
                               {a.name}
-                            </p>
+                            </Link>
                             {a.email && <p className="text-xs text-zinc-500">{a.email}</p>}
                           </div>
                         </div>
@@ -148,6 +153,16 @@ export default async function AlumniPage({
                       </td>
                       <td className="px-4 py-3 text-sm text-zinc-500">
                         {a.assignedCoordinator?.name ?? <span className="text-zinc-600">—</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/alumni/${a.id}`}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Button variant="ghost" size="icon">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Button>
+                        </Link>
                       </td>
                     </tr>
                   );
