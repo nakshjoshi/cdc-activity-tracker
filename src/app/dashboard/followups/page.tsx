@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -17,7 +18,7 @@ export default async function FollowUpsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const session = await getSession();
+  const session = await getSession(); // Unused but keeping if needed
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrow = new Date(today.getTime() + 86400000);
@@ -27,7 +28,47 @@ export default async function FollowUpsPage({
   const page = parseInt(params.page ?? "1");
   const pageSize = 20;
 
-  // Build filter based on active tab
+  // Parallel: fetch counts for all tabs
+  const [overdueCount, todayCount, upcomingCount] = await Promise.all([
+    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { lt: today } } }),
+    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { gte: today, lt: tomorrow } } }),
+    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { gte: tomorrow, lte: in7Days } } }),
+  ]);
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-xl font-bold text-zinc-100">Follow-ups</h1>
+        <p className="mt-0.5 text-sm text-zinc-500">
+          {overdueCount} overdue · {todayCount} today · {upcomingCount} upcoming
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <FollowupTabs counts={{ overdue: overdueCount, today: todayCount, upcoming: upcomingCount }} />
+
+      <Suspense fallback={<FollowUpsListSkeleton />}>
+        <FollowUpsServerList tab={tab} page={page} pageSize={pageSize} today={today} tomorrow={tomorrow} in7Days={in7Days} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function FollowUpsServerList({
+  tab,
+  page,
+  pageSize,
+  today,
+  tomorrow,
+  in7Days,
+}: {
+  tab: string;
+  page: number;
+  pageSize: number;
+  today: Date;
+  tomorrow: Date;
+  in7Days: Date;
+}) {
   const whereMap: Record<string, object> = {
     overdue:  { status: "PENDING", followUpDate: { lt: today } },
     today:    { status: "PENDING", followUpDate: { gte: today, lt: tomorrow } },
@@ -35,11 +76,7 @@ export default async function FollowUpsPage({
   };
   const where = whereMap[tab] ?? whereMap.overdue;
 
-  // Parallel: fetch counts for all tabs + paginated results for active tab
-  const [overdueCount, todayCount, upcomingCount, followUps, total] = await Promise.all([
-    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { lt: today } } }),
-    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { gte: today, lt: tomorrow } } }),
-    prisma.followUp.count({ where: { status: "PENDING", followUpDate: { gte: tomorrow, lte: in7Days } } }),
+  const [followUps, total] = await Promise.all([
     prisma.followUp.findMany({
       where,
       take: pageSize,
@@ -54,22 +91,10 @@ export default async function FollowUpsPage({
   ]);
 
   const totalPages = Math.ceil(total / pageSize);
-
   const borderColor = tab === "overdue" ? "border-red-900/40" : tab === "today" ? "border-orange-900/40" : "border-zinc-700";
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-bold text-zinc-100">Follow-ups</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
-          {overdueCount} overdue · {todayCount} today · {upcomingCount} upcoming
-        </p>
-      </div>
-
-      {/* Tabs */}
-      <FollowupTabs counts={{ overdue: overdueCount, today: todayCount, upcoming: upcomingCount }} />
-
-      {/* Results */}
+    <>
       {followUps.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-700 p-12 text-center text-sm text-zinc-500">
           No follow-ups in this category
@@ -129,6 +154,28 @@ export default async function FollowUpsPage({
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+function FollowUpsListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i} className="p-4 animate-pulse border-zinc-700">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-4 w-32 bg-zinc-800 rounded" />
+                <div className="h-4 w-16 bg-zinc-800 rounded-full" />
+              </div>
+              <div className="h-3 w-48 bg-zinc-800 rounded mb-2" />
+              <div className="h-3 w-32 bg-zinc-800 rounded" />
+            </div>
+            <div className="h-8 w-8 bg-zinc-800 rounded" />
+          </div>
+        </Card>
+      ))}
     </div>
   );
 }

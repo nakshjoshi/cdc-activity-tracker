@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatRelativeTime, ACTIVITY_CONFIG } from "@/lib/utils";
-import { Activity } from "lucide-react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
@@ -20,23 +20,9 @@ export default async function ActivitiesPage({
   const page = parseInt(params.page ?? "1");
   const pageSize = 30;
 
+  // Fetch count fast for header
   const where = params.type ? { type: params.type as never } : {};
-
-  const [activities, total] = await Promise.all([
-    prisma.activity.findMany({
-      where,
-      take: pageSize,
-      skip: (page - 1) * pageSize,
-      orderBy: { createdAt: "desc" },
-      include: {
-        company: { select: { id: true, companyName: true } },
-        createdBy: { select: { name: true } },
-      },
-    }),
-    prisma.activity.count({ where }),
-  ]);
-
-  const totalPages = Math.ceil(total / pageSize);
+  const total = await prisma.activity.count({ where });
 
   return (
     <div className="space-y-5">
@@ -63,6 +49,41 @@ export default async function ActivitiesPage({
         ]}
       />
 
+      <Suspense fallback={<ActivitiesListSkeleton />}>
+        <ActivitiesServerList type={params.type} page={page} pageSize={pageSize} total={total} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ActivitiesServerList({
+  type,
+  page,
+  pageSize,
+  total,
+}: {
+  type?: string;
+  page: number;
+  pageSize: number;
+  total: number;
+}) {
+  const where = type ? { type: type as never } : {};
+
+  const activities = await prisma.activity.findMany({
+    where,
+    take: pageSize,
+    skip: (page - 1) * pageSize,
+    orderBy: { createdAt: "desc" },
+    include: {
+      company: { select: { id: true, companyName: true } },
+      createdBy: { select: { name: true } },
+    },
+  });
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  return (
+    <>
       <div className="space-y-2">
         {activities.map((activity) => {
           const config = ACTIVITY_CONFIG[activity.type];
@@ -109,13 +130,39 @@ export default async function ActivitiesPage({
         })}
       </div>
 
-      {/* Pagination */}
       <Pagination
         currentPage={page}
         totalPages={totalPages}
         baseUrl="/dashboard/activities"
-        searchParams={{ type: params.type }}
+        searchParams={{ type }}
       />
+    </>
+  );
+}
+
+function ActivitiesListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[...Array(6)].map((_, i) => (
+        <Card key={i} className="p-4 animate-pulse">
+          <div className="flex items-start gap-3">
+            <div className="h-8 w-8 bg-zinc-800 rounded-lg shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="h-3 w-16 bg-zinc-800 rounded mb-2" />
+                  <div className="h-4 w-48 bg-zinc-800 rounded" />
+                </div>
+                <div className="h-3 w-16 bg-zinc-800 rounded" />
+              </div>
+              <div className="flex gap-4">
+                <div className="h-3 w-32 bg-zinc-800 rounded" />
+                <div className="h-3 w-24 bg-zinc-800 rounded" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      ))}
     </div>
   );
 }
