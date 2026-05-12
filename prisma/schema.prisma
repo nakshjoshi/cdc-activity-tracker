@@ -95,6 +95,20 @@ enum FollowUpType {
   OTHER
 }
 
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 // ─────────────────────────────────────────────
 // USER & AUTH
 // WHY: Central auth table. Soft-delete via isActive.
@@ -125,6 +139,8 @@ model User {
   assignedAlumni       Alumni[]        @relation("AlumniAssignedCoordinator")
   alumniActivities     AlumniActivity[] @relation("AlumniActivityCreatedBy")
   auditLogs            AuditLog[]
+  tasksAssignedTo      Task[]          @relation("TaskAssignedTo")
+  tasksAssignedBy      Task[]          @relation("TaskAssignedBy")
 
   @@index([email])
   @@index([role])
@@ -172,6 +188,7 @@ model Company {
   activities          Activity[]
   statusLogs          CompanyStatusLog[]
   followUps           FollowUp[]
+  tasks               Task[]
 
   @@index([currentStatus])
   @@index([companyName])
@@ -179,6 +196,44 @@ model Company {
   @@index([assignedCoordinatorId])
   @@index([createdById])
   @@index([isDeleted])
+}
+
+// ─────────────────────────────────────────────
+// TASK
+// WHY: Enables any user to assign work items to others.
+//      Example: "Fill TPO form for Infosys", "Call TCS HR"
+//      Linked to a company for context.
+// ─────────────────────────────────────────────
+
+model Task {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?       @db.Text
+  status        TaskStatus    @default(PENDING)
+  priority      TaskPriority  @default(MEDIUM)
+  dueDate       DateTime?
+
+  // Who is this task for?
+  assignedToId  String
+  assignedTo    User          @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
+
+  // Who created / assigned it?
+  assignedById  String
+  assignedBy    User          @relation("TaskAssignedBy", fields: [assignedById], references: [id])
+
+  // Which company is this about? (optional — some tasks may be general)
+  companyId     String?
+  company       Company?      @relation(fields: [companyId], references: [id])
+
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([assignedToId, status])
+  @@index([assignedById])
+  @@index([companyId])
+  @@index([status])
+  @@index([dueDate])
 }
 
 // ─────────────────────────────────────────────

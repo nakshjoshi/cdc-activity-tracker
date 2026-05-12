@@ -36,10 +36,10 @@ export function FilterBar({
 
   const handleClick = useCallback(
     (value: string) => {
-      // Instant visual switch
-      setOptimisticValue(value);
-
       startTransition(() => {
+        // Instant visual switch (must be inside transition)
+        setOptimisticValue(value);
+
         const params = new URLSearchParams(searchParams.toString());
         // Remove page when filter changes (reset to page 1)
         params.delete("page");
@@ -54,7 +54,7 @@ export function FilterBar({
         router.push(qs ? `${baseUrl}?${qs}` : baseUrl);
       });
     },
-    [searchParams, paramKey, baseUrl, router, setOptimisticValue]
+    [searchParams, paramKey, baseUrl, router, setOptimisticValue, startTransition]
   );
 
   return (

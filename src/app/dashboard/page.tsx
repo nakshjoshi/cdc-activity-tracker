@@ -7,7 +7,7 @@ import { formatRelativeTime, formatDate } from "@/lib/utils";
 import {
   Building2, GraduationCap, TrendingUp, Clock,
   AlertCircle, CheckCircle2, Users, Calendar,
-  Mail, Phone, MessageCircle, StickyNote
+  Mail, Phone, MessageCircle, StickyNote, ClipboardCheck
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -43,6 +43,11 @@ export default async function DashboardPage() {
         <StatCardsGrid />
       </Suspense>
 
+
+      {/* My Tasks */}
+      <Suspense fallback={<div className="h-32 rounded-xl bg-zinc-800/50 animate-pulse" />}>
+        <MyTasksWidget />
+      </Suspense>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Activities - 2/3 width */}
@@ -302,5 +307,81 @@ function ListSkeleton({ count }: { count: number }) {
         <div key={i} className="h-12 rounded-lg bg-zinc-700" />
       ))}
     </div>
+  );
+}
+
+async function MyTasksWidget() {
+  const session = await getSession();
+  if (!session) return null;
+
+  const tasks = await prisma.task.findMany({
+    where: {
+      assignedToId: session.userId,
+      status: { in: ["PENDING", "IN_PROGRESS"] },
+    },
+    take: 5,
+    orderBy: [{ priority: "desc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+    include: {
+      assignedBy: { select: { name: true } },
+      company: { select: { id: true, companyName: true } },
+    },
+  });
+
+  if (tasks.length === 0) return null;
+
+  const PRIORITY_COLOR: Record<string, string> = {
+    LOW: "text-zinc-400",
+    MEDIUM: "text-blue-400",
+    HIGH: "text-orange-400",
+    URGENT: "text-red-400",
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-blue-400" />
+            My Tasks
+            <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
+              {tasks.length}
+            </span>
+          </CardTitle>
+          <Link href="/dashboard/tasks" className="text-xs text-blue-400 hover:underline">
+            View all
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-2">
+        {tasks.map((task) => {
+          const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+          return (
+            <div key={task.id} className={`flex items-start gap-3 rounded-lg p-2 ${isOverdue ? "bg-red-950/20 border border-red-900/30" : "hover:bg-zinc-800/50"} transition-colors`}>
+              <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                task.priority === "URGENT" ? "bg-red-400" :
+                task.priority === "HIGH" ? "bg-orange-400" :
+                task.priority === "MEDIUM" ? "bg-blue-400" : "bg-zinc-500"
+              }`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-zinc-100 truncate">{task.title}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-zinc-500">
+                  {task.company && (
+                    <Link href={`/dashboard/companies/${task.company.id}`} className="hover:text-blue-400 transition-colors">
+                      {task.company.companyName}
+                    </Link>
+                  )}
+                  <span>from {task.assignedBy.name}</span>
+                  {task.dueDate && (
+                    <span className={isOverdue ? "text-red-400 font-medium" : ""}>
+                      Due {formatDate(task.dueDate)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }

@@ -7,11 +7,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDate, STATUS_CONFIG, ROLE_CONFIG, getInitials } from "@/lib/utils";
 import {
   Building2, Globe, Link2, MapPin, Tag, User,
-  Mail, Phone, Star, Clock, ArrowRight,
+  Mail, Phone, Star, Clock, ArrowRight, ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CompanyDetailActions, EditableContactCard } from "./company-detail-actions";
+import { TaskCreateButton } from "@/app/dashboard/tasks/task-actions";
+import { TaskStatusButton, PriorityBadge, TaskStatusBadge } from "@/app/dashboard/tasks/task-status";
 
 export async function generateMetadata({
   params,
@@ -53,10 +55,25 @@ export default async function CompanyDetailPage({
         orderBy: { followUpDate: "asc" },
         include: { createdBy: { select: { name: true } } },
       },
+      tasks: {
+        where: { status: { in: ["PENDING", "IN_PROGRESS"] } },
+        orderBy: [{ priority: "desc" }, { dueDate: "asc" }],
+        include: {
+          assignedTo: { select: { name: true } },
+          assignedBy: { select: { name: true } },
+        },
+      },
     },
   });
 
   if (!company) notFound();
+
+  // Fetch users list for task assignment (lightweight)
+  const users = await prisma.user.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   const overdueFollowUps = company.followUps.filter(
     (f) => new Date(f.followUpDate) < new Date() && f.status === "PENDING"
@@ -99,6 +116,11 @@ export default async function CompanyDetailPage({
           </div>
         </div>
         <CompanyDetailActions company={company} session={session} />
+        <TaskCreateButton
+          users={users}
+          companies={[{ id: company.id, companyName: company.companyName }]}
+          defaultCompanyId={company.id}
+        />
       </div>
 
       {/* Overdue warning */}
@@ -155,6 +177,39 @@ export default async function CompanyDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Tasks */}
+          {company.tasks.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4 text-blue-400" />
+                  Tasks ({company.tasks.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                {company.tasks.map((task) => {
+                  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                  return (
+                    <div key={task.id} className={`flex items-start justify-between gap-2 rounded-lg p-2 ${isOverdue ? "bg-red-950/20 border border-red-900/30" : "hover:bg-zinc-800/50"} transition-colors`}>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <PriorityBadge priority={task.priority} />
+                          <TaskStatusBadge status={task.status} />
+                        </div>
+                        <p className="text-sm font-medium text-zinc-100 truncate">{task.title}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                          {task.assignedBy.name} → {task.assignedTo.name}
+                          {task.dueDate && <span className={isOverdue ? " text-red-400" : ""}> · Due {formatDate(task.dueDate)}</span>}
+                        </p>
+                      </div>
+                      <TaskStatusButton taskId={task.id} currentStatus={task.status} />
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contacts */}
           <Card>
