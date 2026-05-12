@@ -4,6 +4,7 @@ import { Activity } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import { FilterBar } from "@/components/ui/filter-bar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Activities" };
@@ -47,8 +48,10 @@ export default async function ActivitiesPage({
       </div>
 
       {/* Type filters */}
-      <div className="flex flex-wrap gap-2">
-        {[
+      <FilterBar
+        paramKey="type"
+        baseUrl="/dashboard/activities"
+        options={[
           { label: "All", value: "" },
           { label: "Email", value: "EMAIL" },
           { label: "Call", value: "CALL" },
@@ -56,20 +59,9 @@ export default async function ActivitiesPage({
           { label: "WhatsApp", value: "WHATSAPP" },
           { label: "LinkedIn", value: "LINKEDIN" },
           { label: "Follow-up", value: "FOLLOWUP" },
-        ].map((f) => (
-          <Link
-            key={f.value}
-            href={`/dashboard/activities?${f.value ? `type=${f.value}` : ""}`}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              (params.type ?? "") === f.value
-                ? "bg-blue-600 text-white"
-                : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
-            }`}
-          >
-            {f.label}
-          </Link>
-        ))}
-      </div>
+          { label: "TPO Form", value: "TPO_FORM" },
+        ]}
+      />
 
       <div className="space-y-2">
         {activities.map((activity) => {

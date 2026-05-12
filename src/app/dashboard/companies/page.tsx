@@ -10,6 +10,7 @@ import { Building2, Plus, ExternalLink, Globe, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 import { CompaniesActions } from "./companies-actions";
 import { Pagination } from "@/components/ui/pagination";
+import { FilterBar } from "@/components/ui/filter-bar";
 
 
 export const metadata: Metadata = { title: "Companies" };
@@ -48,28 +49,18 @@ export default async function CompaniesPage({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {[
+      <FilterBar
+        paramKey="status"
+        baseUrl="/dashboard/companies"
+        options={[
           { label: "All", value: "" },
           { label: "Lead Found", value: "LEAD_FOUND" },
           { label: "Interested", value: "INTERESTED" },
           { label: "PPT Scheduled", value: "PPT_SCHEDULED" },
           { label: "Offer Released", value: "OFFER_RELEASED" },
           { label: "No Response", value: "NO_RESPONSE" },
-        ].map((filter) => (
-          <Link
-            key={filter.value}
-            href={`/dashboard/companies?${filter.value ? `status=${filter.value}` : ""}${params.search ? `&search=${params.search}` : ""}`}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              (params.status ?? "") === filter.value
-                ? "bg-blue-600 text-white"
-                : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
-            }`}
-          >
-            {filter.label}
-          </Link>
-        ))}
-      </div>
+        ]}
+      />
 
       <Suspense fallback={<CompaniesTableSkeleton />}>
         <CompaniesTableServer params={params} page={page} pageSize={pageSize} />

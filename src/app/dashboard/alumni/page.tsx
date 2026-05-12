@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ALUMNI_STATUS_CONFIG, formatDate, getInitials } from "@/lib/utils";
 import { GraduationCap, ExternalLink, Heart, Users } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { FilterBar } from "@/components/ui/filter-bar";
 import { AlumniActions } from "./alumni-actions";
 import type { Metadata } from "next";
 
@@ -64,27 +65,18 @@ export default async function AlumniPage({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {[
+      <FilterBar
+        paramKey="status"
+        baseUrl="/dashboard/alumni"
+        activeClass="bg-orange-600 text-white"
+        options={[
           { label: "All", value: "" },
           { label: "Not Contacted", value: "NOT_CONTACTED" },
           { label: "Contacted", value: "CONTACTED" },
           { label: "Interested", value: "INTERESTED" },
           { label: "Referred", value: "REFERRED" },
-        ].map((f) => (
-          <Link
-            key={f.value}
-            href={`/dashboard/alumni?${f.value ? `status=${f.value}` : ""}`}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              (params.status ?? "") === f.value
-                ? "bg-orange-600 text-white"
-                : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
-            }`}
-          >
-            {f.label}
-          </Link>
-        ))}
-      </div>
+        ]}
+      />
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">

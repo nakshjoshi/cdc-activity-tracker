@@ -4,7 +4,7 @@ import { formatRelativeTime, ACTIVITY_CONFIG } from "@/lib/utils";
 import { getInitials } from "@/lib/utils";
 import {
   Mail, Phone, MessageCircle, Link2, Users, FileText,
-  RefreshCw, ClipboardList, Calendar, MessageSquare, StickyNote,
+  RefreshCw, ClipboardList, Calendar, MessageSquare, StickyNote, FileInput,
 } from "lucide-react";
 import type { ActivityType } from "@prisma/client";
 
@@ -20,6 +20,7 @@ const ICON_MAP: Record<ActivityType, React.ComponentType<{ className?: string }>
   INTERVIEW_COORDINATION: Calendar,
   INTERNAL_DISCUSSION: MessageSquare,
   NOTE: StickyNote,
+  TPO_FORM: FileInput,
 };
 
 interface TimelineActivity {

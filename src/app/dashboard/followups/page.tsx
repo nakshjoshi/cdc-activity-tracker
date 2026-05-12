@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { AlertCircle, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CompleteFollowUpButton } from "./complete-followup-button";
+import { FollowupTabs } from "./followup-tabs";
 
 export const metadata: Metadata = { title: "Follow-ups" };
 
@@ -55,12 +55,6 @@ export default async function FollowUpsPage({
 
   const totalPages = Math.ceil(total / pageSize);
 
-  const tabs = [
-    { key: "overdue", label: "Overdue", count: overdueCount, color: "text-red-400", icon: <AlertCircle className="h-4 w-4" /> },
-    { key: "today", label: "Today", count: todayCount, color: "text-orange-400", icon: <Clock className="h-4 w-4" /> },
-    { key: "upcoming", label: "Next 7 Days", count: upcomingCount, color: "text-blue-400", icon: <Calendar className="h-4 w-4" /> },
-  ];
-
   const borderColor = tab === "overdue" ? "border-red-900/40" : tab === "today" ? "border-orange-900/40" : "border-zinc-700";
 
   return (
@@ -73,25 +67,7 @@ export default async function FollowUpsPage({
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((t) => (
-          <Link
-            key={t.key}
-            href={`/dashboard/followups?tab=${t.key}`}
-            className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
-              tab === t.key
-                ? "bg-blue-600 text-white"
-                : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
-            }`}
-          >
-            {t.icon}
-            {t.label}
-            <span className="ml-1 rounded-full bg-zinc-700/50 px-1.5 py-0.5 text-[10px] font-bold tabular-nums">
-              {t.count}
-            </span>
-          </Link>
-        ))}
-      </div>
+      <FollowupTabs counts={{ overdue: overdueCount, today: todayCount, upcoming: upcomingCount }} />
 
       {/* Results */}
       {followUps.length === 0 ? (

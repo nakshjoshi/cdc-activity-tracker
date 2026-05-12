@@ -67,6 +67,7 @@ enum ActivityType {
   INTERVIEW_COORDINATION
   INTERNAL_DISCUSSION
   NOTE
+  TPO_FORM
 }
 
 enum AlumniStatus {

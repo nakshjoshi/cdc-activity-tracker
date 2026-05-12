@@ -77,6 +77,7 @@ export const ACTIVITY_CONFIG: Record<ActivityType, { label: string; icon: string
   INTERVIEW_COORDINATION: { label: "Interview Coordination",icon: "Calendar",   color: "text-violet-600" },
   INTERNAL_DISCUSSION:    { label: "Internal Discussion",   icon: "MessageSquare",color: "text-gray-600"  },
   NOTE:                   { label: "Note",                  icon: "StickyNote", color: "text-amber-600"  },
+  TPO_FORM:               { label: "TPO Form",              icon: "FileInput",  color: "text-teal-500"   },
 };
 
 export const ROLE_CONFIG: Record<Role, { label: string; color: string; bg: string }> = {

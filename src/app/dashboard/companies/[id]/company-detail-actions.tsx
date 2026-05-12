@@ -38,6 +38,7 @@ const ACTIVITY_TYPE_OPTIONS = [
   { value: "INTERVIEW_COORDINATION", label: "Interview Coordination" },
   { value: "INTERNAL_DISCUSSION", label: "Internal Discussion" },
   { value: "NOTE", label: "Note" },
+  { value: "TPO_FORM", label: "TPO Form" },
 ];
 
 const STATUS_OPTIONS: { value: CompanyStatus; label: string }[] = [
