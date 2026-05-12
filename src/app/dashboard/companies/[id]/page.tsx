@@ -65,12 +65,12 @@ export default async function CompanyDetailPage({
   return (
     <div className="space-y-5">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/dashboard/companies" className="hover:text-gray-700 dark:hover:text-zinc-300">
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <Link href="/dashboard/companies" className="hover:text-zinc-300">
           Companies
         </Link>
         <ArrowRight className="h-3 w-3" />
-        <span className="text-gray-900 dark:text-zinc-100 font-medium">
+        <span className="text-zinc-100 font-medium">
           {company.companyName}
         </span>
       </div>
@@ -78,22 +78,22 @@ export default async function CompanyDetailPage({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-lg font-bold text-white shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white shadow-lg">
             {getInitials(company.companyName)}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100">
+            <h1 className="text-xl font-bold text-zinc-100">
               {company.companyName}
             </h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <StatusBadge status={company.currentStatus} />
               {company.companyType && (
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-zinc-800 dark:text-zinc-400">
+                <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
                   {company.companyType}
                 </span>
               )}
               {company.industry && (
-                <span className="text-xs text-gray-400">{company.industry}</span>
+                <span className="text-xs text-zinc-500">{company.industry}</span>
               )}
             </div>
           </div>
@@ -103,7 +103,7 @@ export default async function CompanyDetailPage({
 
       {/* Overdue warning */}
       {overdueFollowUps.length > 0 && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-xl border border-red-900/40 bg-red-950/30 p-3 text-sm text-red-400">
           ⚠️ {overdueFollowUps.length} overdue follow-up{overdueFollowUps.length > 1 ? "s" : ""} for this company
         </div>
       )}
@@ -119,36 +119,36 @@ export default async function CompanyDetailPage({
             <CardContent className="pt-0 space-y-3">
               {company.website && (
                 <InfoRow icon={<Globe className="h-3.5 w-3.5" />} label="Website">
-                  <a href={company.website} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline text-sm truncate">
+                  <a href={company.website} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm truncate">
                     {company.website}
                   </a>
                 </InfoRow>
               )}
               {company.linkedin && (
                 <InfoRow icon={<Link2 className="h-3.5 w-3.5" />} label="LinkedIn">
-                  <a href={company.linkedin} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline text-sm">
+                  <a href={company.linkedin} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm">
                     View Profile
                   </a>
                 </InfoRow>
               )}
               {(company.city || company.state) && (
                 <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Location">
-                  <span className="text-sm text-gray-700 dark:text-zinc-300">
+                  <span className="text-sm text-zinc-300">
                     {[company.city, company.state, company.country].filter(Boolean).join(", ")}
                   </span>
                 </InfoRow>
               )}
               {company.domain && (
                 <InfoRow icon={<Tag className="h-3.5 w-3.5" />} label="Domain">
-                  <span className="text-sm text-gray-700 dark:text-zinc-300">{company.domain}</span>
+                  <span className="text-sm text-zinc-300">{company.domain}</span>
                 </InfoRow>
               )}
               <InfoRow icon={<Clock className="h-3.5 w-3.5" />} label="Added">
-                <span className="text-sm text-gray-500">{formatDate(company.createdAt)} by {company.createdBy.name}</span>
+                <span className="text-sm text-zinc-500">{formatDate(company.createdAt)} by {company.createdBy.name}</span>
               </InfoRow>
               {company.assignedCoordinator && (
                 <InfoRow icon={<User className="h-3.5 w-3.5" />} label="Coordinator">
-                  <span className="text-sm text-gray-700 dark:text-zinc-300">
+                  <span className="text-sm text-zinc-300">
                     {company.assignedCoordinator.name}
                   </span>
                 </InfoRow>
@@ -165,7 +165,7 @@ export default async function CompanyDetailPage({
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
               {company.contacts.length === 0 ? (
-                <p className="text-sm text-gray-400">No contacts added yet</p>
+                <p className="text-sm text-zinc-500">No contacts added yet</p>
               ) : (
                 company.contacts.map((contact) => (
                   <EditableContactCard
@@ -187,17 +187,17 @@ export default async function CompanyDetailPage({
               <div className="space-y-2">
                 {company.statusLogs.slice(0, 8).map((log) => (
                   <div key={log.id} className="flex items-start gap-2 text-xs">
-                    <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
+                    <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-1">
                         {log.oldStatus && <StatusBadge status={log.oldStatus} size="sm" />}
-                        {log.oldStatus && <span className="text-gray-400">→</span>}
+                        {log.oldStatus && <span className="text-zinc-500">→</span>}
                         <StatusBadge status={log.newStatus} size="sm" />
                       </div>
-                      <p className="mt-0.5 text-gray-500">
+                      <p className="mt-0.5 text-zinc-500">
                         {log.changedBy.name} · {formatDate(log.changedAt)}
                       </p>
-                      {log.notes && <p className="text-gray-500 italic">{log.notes}</p>}
+                      {log.notes && <p className="text-zinc-500 italic">{log.notes}</p>}
                     </div>
                   </div>
                 ))}
@@ -235,9 +235,9 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="mt-0.5 text-gray-400 shrink-0">{icon}</span>
+      <span className="mt-0.5 text-zinc-500 shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-xs text-gray-400 uppercase tracking-wide">{label}</p>
+        <p className="text-xs text-zinc-500 uppercase tracking-wide">{label}</p>
         {children}
       </div>
     </div>

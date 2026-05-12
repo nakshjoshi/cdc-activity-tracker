@@ -44,18 +44,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-4">
       {/* Background decorations */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo block */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-600/40">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40">
             <GraduationCap className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">TNP Tracker</h1>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-2xl">
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/5 p-6 backdrop-blur-md shadow-2xl">
           <h2 className="mb-5 text-base font-semibold text-white">
             Sign in to continue
           </h2>
@@ -81,7 +81,7 @@ export default function LoginPage() {
                   {...register("email")}
                   type="email"
                   placeholder="you@college.edu"
-                  className="h-9 w-full rounded-lg border border-white/10 bg-white/10 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="h-9 w-full rounded-lg border border-white/10 bg-zinc-900/10 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                 />
               </div>
               {errors.email && (
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   {...register("password")}
                   type={showPass ? "text" : "password"}
                   placeholder="••••••••"
-                  className="h-9 w-full rounded-lg border border-white/10 bg-white/10 pl-9 pr-9 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="h-9 w-full rounded-lg border border-white/10 bg-zinc-900/10 pl-9 pr-9 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                 />
                 <button
                   type="button"

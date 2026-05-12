@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ROLE_CONFIG } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, User, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import type { Metadata } from "next";
 import { ChangePasswordForm } from "./change-password-form";
 import { UpdateProfileForm } from "./update-profile-form";
@@ -27,11 +27,10 @@ export default async function SettingsPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-zinc-100">
-          <Settings className="h-5 w-5 text-indigo-600" />
+        <h1 className="text-xl font-bold text-zinc-100">
           Settings
         </h1>
-        <p className="mt-0.5 text-sm text-gray-500 dark:text-zinc-400">
+        <p className="mt-0.5 text-sm text-zinc-500">
           Manage your profile and account security
         </p>
       </div>
@@ -40,13 +39,13 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
               {user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <div>
               <CardTitle>{user.name}</CardTitle>
               <div className="mt-0.5 flex items-center gap-2">
-                <p className="text-sm text-gray-500">{user.email}</p>
+                <p className="text-sm text-zinc-500">{user.email}</p>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleConfig.color} ${roleConfig.bg}`}>
                   {roleConfig.label}
                 </span>
@@ -66,10 +65,10 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-gray-500" />
+            <Lock className="h-4 w-4 text-zinc-500" />
             Change Password
           </CardTitle>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500">
             Use a strong password with at least 8 characters.
           </p>
         </CardHeader>

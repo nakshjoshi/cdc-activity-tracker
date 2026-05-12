@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,13 +11,15 @@ import {
   deleteContactAction,
   updateCompanyStatusAction,
   updateCompanyAction,
+  assignCoordinatorAction,
+  getCoordinatorsAction,
 } from "@/actions/companies";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "sonner";
 import {
-  Plus, RefreshCw, UserPlus, Pencil, Trash2, Star, Mail, Phone, Link2,
+  Plus, RefreshCw, UserPlus, Pencil, Trash2, Star, Mail, Phone, Link2, UserCheck,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import type { Company, CompanyStatus, Contact } from "@prisma/client";
@@ -86,7 +88,7 @@ const DESIGNATION_OPTIONS = [
 // ─── Main header actions ───────────────────────────────────
 
 interface CompanyDetailActionsProps {
-  company: Pick<Company, "id" | "companyName" | "currentStatus" | "domain" | "website" | "linkedin" | "companyType" | "industry" | "city" | "state" | "country" | "notes">;
+  company: Pick<Company, "id" | "companyName" | "currentStatus" | "domain" | "website" | "linkedin" | "companyType" | "industry" | "city" | "state" | "country" | "notes" | "assignedCoordinatorId">;
   session: SessionPayload | null;
 }
 
@@ -95,6 +97,9 @@ export function CompanyDetailActions({ company, session }: CompanyDetailActionsP
   const [contactOpen, setContactOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+
+  const canAssign = session?.role === "ADMIN" || session?.role === "CDC_HEAD";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -110,6 +115,12 @@ export function CompanyDetailActions({ company, session }: CompanyDetailActionsP
         <UserPlus className="h-3.5 w-3.5" />
         Add Contact
       </Button>
+      {canAssign && (
+        <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)}>
+          <UserCheck className="h-3.5 w-3.5" />
+          Assign
+        </Button>
+      )}
       <Button size="sm" onClick={() => setActivityOpen(true)}>
         <Plus className="h-3.5 w-3.5" />
         Log Activity
@@ -136,6 +147,14 @@ export function CompanyDetailActions({ company, session }: CompanyDetailActionsP
         companyId={company.id}
         currentStatus={company.currentStatus}
       />
+      {canAssign && (
+        <AssignCoordinatorModal
+          open={assignOpen}
+          onClose={() => setAssignOpen(false)}
+          companyId={company.id}
+          currentAssigneeId={company.assignedCoordinatorId}
+        />
+      )}
     </div>
   );
 }
@@ -205,7 +224,7 @@ function EditCompanyModal({
           <Input label="Country" {...register("country")} />
         </div>
         <Textarea label="Notes" {...register("notes")} />
-        <div className="flex justify-end gap-2 border-t border-gray-100 pt-3 dark:border-zinc-800">
+        <div className="flex justify-end gap-2 border-t border-zinc-800 pt-3">
           <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={isPending}>Save Changes</Button>
         </div>
@@ -346,31 +365,31 @@ export function EditableContactCard({
 
   return (
     <>
-      <div className="group rounded-lg border border-gray-100 p-3 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-900 transition-colors">
+      <div className="group rounded-lg border border-zinc-800 p-3 hover:border-indigo-200 transition-colors">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">{contact.name}</p>
+              <p className="text-sm font-medium text-zinc-100">{contact.name}</p>
               {contact.isPrimary && <Star className="h-3 w-3 fill-amber-400 text-amber-400" />}
               {contact.designation && (
-                <span className="text-xs text-gray-400">{contact.designation}</span>
+                <span className="text-xs text-zinc-500">{contact.designation}</span>
               )}
             </div>
             <div className="mt-1.5 space-y-1">
               {contact.email && (
-                <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-indigo-600 group/link">
+                <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-blue-400 group/link">
                   <Mail className="h-3 w-3" />
                   <span className="truncate">{contact.email}</span>
                 </a>
               )}
               {contact.phone && (
-                <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-indigo-600">
+                <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-blue-400">
                   <Phone className="h-3 w-3" />
                   {contact.phone}
                 </a>
               )}
               {contact.linkedin && (
-                <a href={contact.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-indigo-600 hover:underline">
+                <a href={contact.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-blue-400 hover:underline">
                   <Link2 className="h-3 w-3" />
                   LinkedIn Profile
                 </a>
@@ -403,7 +422,7 @@ export function EditableContactCard({
 
       {/* Delete confirm */}
       <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete Contact?" size="sm">
-        <p className="text-sm text-gray-600 dark:text-zinc-400 mb-4">
+        <p className="text-sm text-zinc-400 mb-4">
           Are you sure you want to delete <strong>{contact.name}</strong>? This cannot be undone.
         </p>
         <div className="flex justify-end gap-2">
@@ -440,7 +459,7 @@ function ContactForm({ register, handleSubmit, errors, isPending, onClose, onSub
       <Textarea label="Notes" placeholder="Any notes about this contact..." {...register("notes")} />
       <div className="flex items-center gap-2">
         <input type="checkbox" id="isPrimary" {...register("isPrimary")} className="rounded" />
-        <label htmlFor="isPrimary" className="text-sm text-gray-700 dark:text-zinc-300">Set as primary contact</label>
+        <label htmlFor="isPrimary" className="text-sm text-zinc-300">Set as primary contact</label>
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
@@ -490,3 +509,80 @@ function UpdateStatusModal({ open, onClose, companyId, currentStatus }: {
     </Modal>
   );
 }
+
+// ─── Assign Coordinator Modal ──────────────────────────────
+
+type CoordinatorOption = { id: string; name: string; role: string };
+
+function AssignCoordinatorModal({
+  open, onClose, companyId, currentAssigneeId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  companyId: string;
+  currentAssigneeId: string | null;
+}) {
+  const [coordinators, setCoordinators] = useState<CoordinatorOption[]>([]);
+  const [selectedId, setSelectedId] = useState<string>(currentAssigneeId ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  // Load users and reset selection every time the modal opens
+  useEffect(() => {
+    if (!open) return;
+    setSelectedId(currentAssigneeId ?? "");
+    getCoordinatorsAction().then((res) => {
+      if (res.users) setCoordinators(res.users);
+    });
+  }, [open, currentAssigneeId]);
+
+  const handleSave = () => {
+    startTransition(async () => {
+      const result = await assignCoordinatorAction(
+        companyId,
+        selectedId === "" ? null : selectedId
+      );
+      if (result.error) toast.error(result.error);
+      else {
+        toast.success(selectedId ? "Coordinator assigned!" : "Coordinator removed");
+        onClose();
+      }
+    });
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Assign Coordinator" size="sm">
+      <div className="space-y-4">
+        <p className="text-sm text-zinc-500">
+          Choose a coordinator to assign this company to. Only ADMIN and CDC Head can do this.
+        </p>
+
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+            Coordinator
+          </label>
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          >
+            <option value="">— Unassigned —</option>
+            {coordinators.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.role.replace(/_/g, " ")})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-zinc-800 pt-3">
+          <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
+          <Button loading={isPending} onClick={handleSave}>
+            <UserCheck className="h-3.5 w-3.5" />
+            Save
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+

@@ -47,9 +47,9 @@ export function ChangePasswordForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Info banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-blue-900/30 dark:bg-blue-900/10">
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
-        <p className="text-xs text-blue-700 dark:text-blue-300">
+      <div className="flex items-start gap-2 rounded-lg border border-blue-900/40 bg-blue-950/30 p-3">
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+        <p className="text-xs text-blue-400">
           Your admin has set a temporary password. Please change it to something only you know.
         </p>
       </div>

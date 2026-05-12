@@ -8,12 +8,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  default:     "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm",
+  default:     "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
   destructive: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-  outline:     "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
-  secondary:   "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-  ghost:       "text-gray-700 hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
-  link:        "text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400",
+  outline:     "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800/50",
+  secondary:   "bg-zinc-800 text-zinc-100 hover:bg-zinc-700",
+  ghost:       "text-zinc-400 hover:bg-zinc-800",
+  link:        "text-blue-400 underline-offset-4 hover:underline",
 };
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -30,7 +30,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 disabled:pointer-events-none disabled:opacity-50",
           variantClasses[variant],
           sizeClasses[size],
           className

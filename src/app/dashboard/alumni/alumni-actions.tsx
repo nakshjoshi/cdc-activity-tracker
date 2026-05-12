@@ -23,8 +23,9 @@ const BRANCH_OPTIONS = [
   { value: "OTHER", label: "Other" },
 ];
 
-const BATCH_OPTIONS = Array.from({ length: 15 }, (_, i) => {
-  const year = 2030 - i;
+const currentYear = new Date().getFullYear();
+const BATCH_OPTIONS = Array.from({ length: currentYear + 4 - 2008 + 1 }, (_, i) => {
+  const year = currentYear + 4 - i;
   return { value: String(year), label: String(year) };
 });
 
@@ -61,7 +62,7 @@ export function AlumniActions({ session }: { session: SessionPayload | null }) {
             <div className="col-span-2">
               <Input label="Full Name" required placeholder="Rahul Sharma" error={errors.name?.message} {...register("name")} />
             </div>
-            <Select label="Batch Year" required options={BATCH_OPTIONS} placeholder="Select year" {...register("batch")} />
+            <Select label="Year of Admission" required options={BATCH_OPTIONS} placeholder="Select year" {...register("batch")} />
             <Select label="Branch" required options={BRANCH_OPTIONS} placeholder="Select branch" {...register("branch")} />
             <Input label="Current Company" placeholder="Google, Microsoft, etc." {...register("currentCompany")} />
             <Input label="Designation" placeholder="Software Engineer" {...register("designation")} />
@@ -71,11 +72,11 @@ export function AlumniActions({ session }: { session: SessionPayload | null }) {
             <Input label="City" placeholder="Bangalore" {...register("city")} />
           </div>
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300">
+            <label className="flex items-center gap-2 text-sm text-zinc-300">
               <input type="checkbox" {...register("willingToHelp")} className="rounded" />
               Willing to help with placements
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300">
+            <label className="flex items-center gap-2 text-sm text-zinc-300">
               <input type="checkbox" {...register("referralCapability")} className="rounded" />
               Can provide referrals
             </label>

@@ -9,6 +9,7 @@ import { formatDate, getInitials } from "@/lib/utils";
 import { Building2, Plus, ExternalLink, Globe, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 import { CompaniesActions } from "./companies-actions";
+import { Pagination } from "@/components/ui/pagination";
 
 
 export const metadata: Metadata = { title: "Companies" };
@@ -29,6 +30,65 @@ export default async function CompaniesPage({
   const page = parseInt(params.page ?? "1");
   const pageSize = 20;
 
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-zinc-100">
+            Companies
+          </h1>
+          <p className="mt-0.5 text-sm text-zinc-500">
+            Manage your placement pipeline
+          </p>
+        </div>
+        <Suspense fallback={<Button disabled><Plus className="h-4 w-4" />Add Company</Button>}>
+          <CompaniesActions session={session} />
+        </Suspense>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { label: "All", value: "" },
+          { label: "Lead Found", value: "LEAD_FOUND" },
+          { label: "Interested", value: "INTERESTED" },
+          { label: "PPT Scheduled", value: "PPT_SCHEDULED" },
+          { label: "Offer Released", value: "OFFER_RELEASED" },
+          { label: "No Response", value: "NO_RESPONSE" },
+        ].map((filter) => (
+          <Link
+            key={filter.value}
+            href={`/dashboard/companies?${filter.value ? `status=${filter.value}` : ""}${params.search ? `&search=${params.search}` : ""}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              (params.status ?? "") === filter.value
+                ? "bg-blue-600 text-white"
+                : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
+            }`}
+          >
+            {filter.label}
+          </Link>
+        ))}
+      </div>
+
+      <Suspense fallback={<CompaniesTableSkeleton />}>
+        <CompaniesTableServer params={params} page={page} pageSize={pageSize} />
+      </Suspense>
+    </div>
+  );
+}
+
+// ─── Async Component for Suspense ──────────────────────────────────────────
+
+async function CompaniesTableServer({
+  params,
+  page,
+  pageSize,
+}: {
+  params: SearchParams;
+  page: number;
+  pageSize: number;
+}) {
   const where = {
     isDeleted: false,
     ...(params.status && { currentStatus: params.status as never }),
@@ -60,58 +120,17 @@ export default async function CompaniesPage({
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-zinc-100">
-            <Building2 className="h-5 w-5 text-indigo-600" />
-            Companies
-          </h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-zinc-400">
-            {total} companies in pipeline
-          </p>
-        </div>
-        <Suspense fallback={<Button disabled><Plus className="h-4 w-4" />Add Company</Button>}>
-          <CompaniesActions session={session} />
-        </Suspense>
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: "All", value: "" },
-          { label: "Lead Found", value: "LEAD_FOUND" },
-          { label: "Interested", value: "INTERESTED" },
-          { label: "PPT Scheduled", value: "PPT_SCHEDULED" },
-          { label: "Offer Released", value: "OFFER_RELEASED" },
-          { label: "No Response", value: "NO_RESPONSE" },
-        ].map((filter) => (
-          <Link
-            key={filter.value}
-            href={`/dashboard/companies?${filter.value ? `status=${filter.value}` : ""}${params.search ? `&search=${params.search}` : ""}`}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              (params.status ?? "") === filter.value
-                ? "bg-indigo-600 text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300"
-            }`}
-          >
-            {filter.label}
-          </Link>
-        ))}
-      </div>
-
-      {/* Table */}
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100 dark:divide-zinc-800">
+          <table className="min-w-full divide-y divide-gray-100">
             <thead>
-              <tr className="bg-gray-50 dark:bg-zinc-800/50">
+              <tr className="bg-zinc-800/50">
                 {["Company", "Status", "Contact", "Coordinator", "Activities", "Updated"].map(
                   (h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-zinc-400"
+                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500"
                     >
                       {h}
                     </th>
@@ -120,14 +139,14 @@ export default async function CompaniesPage({
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-gray-100">
               {companies.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-sm text-gray-400">
+                  <td colSpan={7} className="py-16 text-center text-sm text-zinc-500">
                     No companies found.{" "}
                     <Link
                       href="/dashboard/companies?add=1"
-                      className="text-indigo-600 hover:underline"
+                      className="text-blue-400 hover:underline"
                     >
                       Add the first one
                     </Link>
@@ -139,31 +158,31 @@ export default async function CompaniesPage({
                   return (
                     <tr
                       key={company.id}
-                      className="group transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+                      className="group transition-colors hover:bg-zinc-800/50"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-violet-100 text-xs font-bold text-indigo-700 dark:from-indigo-900/50 dark:to-violet-900/50 dark:text-indigo-300">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-900/50 to-blue-900/50 text-xs font-bold text-blue-400">
                             {getInitials(company.companyName)}
                           </div>
                           <div>
                             <Link
                               href={`/dashboard/companies/${company.id}`}
-                              className="text-sm font-semibold text-gray-900 hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
+                              className="text-sm font-semibold text-zinc-100 hover:text-blue-400"
                             >
                               {company.companyName}
                             </Link>
                             <div className="flex items-center gap-2 mt-0.5">
                               {company.domain && (
-                                <span className="text-xs text-gray-400">{company.domain}</span>
+                                <span className="text-xs text-zinc-500">{company.domain}</span>
                               )}
                               {company.website && (
-                                <a href={company.website} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-indigo-500">
+                                <a href={company.website} target="_blank" rel="noreferrer" className="text-zinc-600 hover:text-blue-500">
                                   <Globe className="h-3 w-3" />
                                 </a>
                               )}
                               {company.linkedin && (
-                                <a href={company.linkedin} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-blue-600">
+                                <a href={company.linkedin} target="_blank" rel="noreferrer" className="text-zinc-600 hover:text-blue-400">
                                   <Link2 className="h-3 w-3" />
                                 </a>
                               )}
@@ -177,28 +196,28 @@ export default async function CompaniesPage({
                       <td className="px-4 py-3">
                         {primaryContact ? (
                           <div>
-                            <p className="text-sm text-gray-900 dark:text-zinc-100">{primaryContact.name}</p>
-                            <p className="text-xs text-gray-400">{primaryContact.designation}</p>
+                            <p className="text-sm text-zinc-100">{primaryContact.name}</p>
+                            <p className="text-xs text-zinc-500">{primaryContact.designation}</p>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-zinc-500">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {company.assignedCoordinator ? (
-                          <span className="text-sm text-gray-700 dark:text-zinc-300">
+                          <span className="text-sm text-zinc-300">
                             {company.assignedCoordinator.name}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">Unassigned</span>
+                          <span className="text-xs text-zinc-500">Unassigned</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
+                        <span className="rounded-full bg-blue-950/30 px-2 py-0.5 text-xs font-medium text-blue-400">
                           {company._count.activities}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-400">
+                      <td className="px-4 py-3 text-sm text-zinc-500">
                         {formatDate(company.updatedAt)}
                       </td>
                       <td className="px-4 py-3">
@@ -220,26 +239,43 @@ export default async function CompaniesPage({
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-zinc-800">
-            <p className="text-xs text-gray-500">
-              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
-            </p>
-            <div className="flex gap-1">
-              {page > 1 && (
-                <Link href={`/dashboard/companies?page=${page - 1}${params.status ? `&status=${params.status}` : ""}`}>
-                  <Button variant="outline" size="sm">Previous</Button>
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link href={`/dashboard/companies?page=${page + 1}${params.status ? `&status=${params.status}` : ""}`}>
-                  <Button variant="outline" size="sm">Next</Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="px-4 pb-4">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            baseUrl="/dashboard/companies"
+            searchParams={{ status: params.status, search: params.search }}
+          />
+        </div>
       </Card>
-    </div>
+  );
+}
+
+function CompaniesTableSkeleton() {
+  return (
+    <Card className="overflow-hidden animate-pulse">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-zinc-800">
+          <thead>
+            <tr className="bg-zinc-800/50">
+              {[...Array(6)].map((_, i) => (
+                <th key={i} className="px-4 py-3"><div className="h-4 w-24 bg-zinc-800 rounded" /></th>
+              ))}
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800">
+            {[...Array(8)].map((_, i) => (
+              <tr key={i}>
+                {[...Array(6)].map((_, j) => (
+                  <td key={j} className="px-4 py-4"><div className="h-4 w-32 bg-zinc-800 rounded" /></td>
+                ))}
+                <td className="px-4 py-4"><div className="h-8 w-8 bg-zinc-800 rounded" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }

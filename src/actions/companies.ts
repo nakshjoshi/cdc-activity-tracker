@@ -147,9 +147,22 @@ export async function deleteCompanyAction(companyId: string) {
   return { success: true };
 }
 
+export async function getCoordinatorsAction() {
+  const session = await getSession();
+  if (!session) return { error: "Unauthorized", users: [] };
+
+  const users = await prisma.user.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, role: true },
+    orderBy: { name: "asc" },
+  });
+
+  return { users };
+}
+
 export async function assignCoordinatorAction(
   companyId: string,
-  coordinatorId: string
+  coordinatorId: string | null
 ) {
   const session = await getSession();
   if (!session || !["ADMIN", "CDC_HEAD"].includes(session.role)) {
@@ -162,6 +175,7 @@ export async function assignCoordinatorAction(
   });
 
   revalidatePath(`/dashboard/companies/${companyId}`);
+  revalidatePath("/dashboard/companies");
   return { success: true };
 }
 

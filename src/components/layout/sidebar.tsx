@@ -3,91 +3,70 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard, Building2, Users, GraduationCap,
-  Calendar, Settings, ChevronLeft, ChevronRight,
-  Activity, BarChart3,
-} from "lucide-react";
-import { useState } from "react";
+import { Settings, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import type { Role } from "@prisma/client";
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  exact?: boolean;
-  roles?: Role[];
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard",  href: "/dashboard",            icon: LayoutDashboard, exact: true },
-  { label: "Companies",  href: "/dashboard/companies",  icon: Building2 },
-  { label: "Alumni",     href: "/dashboard/alumni",     icon: GraduationCap },
-  { label: "Follow-Ups", href: "/dashboard/followups",  icon: Calendar },
-  { label: "Activities", href: "/dashboard/activities", icon: Activity },
-  {
-    label: "Users",
-    href: "/dashboard/users",
-    icon: Users,
-    roles: ["ADMIN"] as Role[],
-  },
-  {
-    label: "Reports",
-    href: "/dashboard/reports",
-    icon: BarChart3,
-    roles: ["ADMIN", "CDC_CHAIRMAN", "CDC_HEAD", "FACULTY_COORDINATOR"] as Role[],
-  },
-];
+import { NAV_ITEMS } from "./nav-config";
 
 export function Sidebar({ userRole }: { userRole?: Role }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside
-      className={cn(
-        "flex h-screen flex-col border-r border-gray-200 bg-white transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950",
-        collapsed ? "w-16" : "w-60"
-      )}
-    >
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const filteredItems = NAV_ITEMS.filter(
+    (item) => !item.roles || (userRole && item.roles.includes(userRole))
+  );
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b border-gray-100 px-4 dark:border-zinc-800">
+      <div className="flex h-16 items-center justify-between px-4">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white">
-              <GraduationCap className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm">
+              T
             </div>
-            <span className="text-sm font-bold text-gray-900 dark:text-zinc-100">
+            <span className="text-sm font-bold text-zinc-100 tracking-tight">
               TNP Tracker
             </span>
           </div>
         )}
         {collapsed && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white mx-auto">
-            <GraduationCap className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm mx-auto">
+            T
           </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-zinc-800",
+            "hidden md:flex h-7 w-7 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400 transition-colors",
             collapsed && "mx-auto"
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-4 w-4" />
           ) : (
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-4 w-4" />
           )}
+        </button>
+        {/* Close button on mobile */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden flex h-7 w-7 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400 transition-colors"
+        >
+          <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto p-2">
-        <ul className="space-y-0.5">
-          {NAV_ITEMS.filter(
-            (item) => !item.roles || (userRole && item.roles.includes(userRole))
-          ).map((item) => {
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
+        <ul className="space-y-1">
+          {filteredItems.map((item) => {
             const Icon = item.icon;
             const active = item.exact
               ? pathname === item.href
@@ -99,17 +78,17 @@ export function Sidebar({ userRole }: { userRole?: Role }) {
                   href={item.href}
                   title={collapsed ? item.label : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                     active
-                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-                    collapsed && "justify-center"
+                      ? "bg-blue-600/15 text-blue-400"
+                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
+                    collapsed && "justify-center px-2"
                   )}
                 >
                   <Icon
                     className={cn(
-                      "h-4 w-4 shrink-0",
-                      active ? "text-indigo-600 dark:text-indigo-400" : ""
+                      "h-[18px] w-[18px] shrink-0",
+                      active ? "text-blue-400" : ""
                     )}
                   />
                   {!collapsed && item.label}
@@ -121,18 +100,48 @@ export function Sidebar({ userRole }: { userRole?: Role }) {
       </nav>
 
       {/* Bottom */}
-      <div className="border-t border-gray-100 p-2 dark:border-zinc-800">
+      <div className="border-t border-zinc-800 px-3 py-2">
         <Link
           href="/dashboard/settings"
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
-            collapsed && "justify-center"
+            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300",
+            collapsed && "justify-center px-2"
           )}
         >
-          <Settings className="h-4 w-4 shrink-0" />
+          <Settings className="h-[18px] w-[18px] shrink-0" />
           {!collapsed && "Settings"}
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden md:flex flex-col glass-panel rounded-2xl transition-all duration-200",
+          collapsed ? "w-[72px]" : "w-60"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay sidebar */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="absolute inset-y-0 left-0 w-72 bg-zinc-900 shadow-2xl flex flex-col">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
+
+// Export for topbar mobile menu
+export { type Role };

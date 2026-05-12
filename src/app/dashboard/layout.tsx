@@ -13,17 +13,19 @@ export default async function DashboardLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-[#0C0C0F] p-2 sm:p-3 gap-2 sm:gap-3">
       <Sidebar userRole={session.role as Role} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar
-          user={{
-            name: session.name,
-            email: session.email,
-            role: session.role as Role,
-          }}
-        />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <div className="flex flex-1 flex-col overflow-hidden gap-2 sm:gap-3">
+        <div className="relative z-10">
+          <Topbar
+            user={{
+              name: session.name,
+              email: session.email,
+              role: session.role as Role,
+            }}
+          />
+        </div>
+        <main className="flex-1 overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-800 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

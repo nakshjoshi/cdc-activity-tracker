@@ -42,8 +42,7 @@ export function Modal({ open, onClose, title, description, children, size = "md"
       {/* Panel */}
       <div
         className={cn(
-          "relative z-10 w-full rounded-2xl border border-gray-200 bg-white shadow-2xl",
-          "dark:border-zinc-700 dark:bg-zinc-900",
+          "relative z-10 w-full rounded-3xl premium-card shadow-2xl",
           "animate-in fade-in zoom-in-95 duration-200",
           sizeMap[size],
           className
@@ -51,10 +50,10 @@ export function Modal({ open, onClose, title, description, children, size = "md"
       >
         {/* Header */}
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-gray-100 p-5 dark:border-zinc-800">
+          <div className="flex items-start justify-between gap-4 border-b border-zinc-800 p-5">
             <div>
-              {title && <h2 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">{title}</h2>}
-              {description && <p className="mt-0.5 text-sm text-gray-500 dark:text-zinc-400">{description}</p>}
+              {title && <h2 className="text-lg font-semibold text-zinc-100">{title}</h2>}
+              {description && <p className="mt-0.5 text-sm text-zinc-500">{description}</p>}
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 -mt-1 -mr-1">
               <X className="h-4 w-4" />

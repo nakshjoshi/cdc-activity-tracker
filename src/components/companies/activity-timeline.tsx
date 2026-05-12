@@ -41,8 +41,8 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   if (activities.length === 0) {
     return (
       <div className="py-12 text-center">
-        <MessageSquare className="mx-auto h-10 w-10 text-gray-300" />
-        <p className="mt-2 text-sm text-gray-500">No activities yet. Log the first interaction!</p>
+        <MessageSquare className="mx-auto h-10 w-10 text-zinc-600" />
+        <p className="mt-2 text-sm text-zinc-500">No activities yet. Log the first interaction!</p>
       </div>
     );
   }
@@ -59,12 +59,12 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
             {/* Timeline line + icon */}
             <div className="flex flex-col items-center">
               <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white shadow-sm ring-1 ring-gray-200 dark:border-zinc-900 dark:bg-zinc-900 dark:ring-zinc-700`}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-zinc-800 bg-zinc-900 shadow-sm"
               >
                 <Icon className={`h-3.5 w-3.5 ${config.color}`} />
               </div>
               {!isLast && (
-                <div className="mt-1 h-full w-0.5 bg-gray-200 dark:bg-zinc-700" />
+                <div className="mt-1 h-full w-0.5 bg-zinc-700" />
               )}
             </div>
 
@@ -75,17 +75,17 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                   <span className={`text-xs font-semibold uppercase tracking-wide ${config.color}`}>
                     {config.label}
                   </span>
-                  <p className="mt-0.5 text-sm font-medium text-gray-900 dark:text-zinc-100">
+                  <p className="mt-0.5 text-sm font-medium text-zinc-100">
                     {activity.summary}
                   </p>
                 </div>
-                <span className="text-xs text-gray-400 dark:text-zinc-500 whitespace-nowrap">
+                <span className="text-xs text-zinc-500 whitespace-nowrap">
                   {formatRelativeTime(activity.createdAt)}
                 </span>
               </div>
 
               {activity.notes && (
-                <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">
+                <p className="mt-1 text-sm text-zinc-400 leading-relaxed">
                   {activity.notes}
                 </p>
               )}
@@ -93,22 +93,22 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
               <div className="mt-1.5 flex flex-wrap items-center gap-3">
                 {/* Creator */}
                 <div className="flex items-center gap-1.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-900/50 text-[10px] font-bold text-blue-400">
                     {getInitials(activity.createdBy.name)}
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-zinc-400">
+                  <span className="text-xs text-zinc-500">
                     {activity.createdBy.name}
                   </span>
                 </div>
 
                 {activity.nextAction && (
-                  <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <span className="rounded-full bg-amber-950/30 px-2 py-0.5 text-xs text-amber-400">
                     Next: {activity.nextAction}
                   </span>
                 )}
 
                 {activity.nextFollowUpDate && (
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  <span className="rounded-full bg-blue-950/30 px-2 py-0.5 text-xs text-blue-400">
                     Follow-up: {new Date(activity.nextFollowUpDate).toLocaleDateString("en-IN")}
                   </span>
                 )}

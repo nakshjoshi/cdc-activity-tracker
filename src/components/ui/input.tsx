@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-gray-700 dark:text-zinc-300"
+            className="text-sm font-medium text-zinc-300"
           >
             {label}
             {props.required && <span className="ml-0.5 text-red-500">*</span>}
@@ -24,7 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-500">
               {leftIcon}
             </div>
           )}
@@ -32,10 +32,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             ref={ref}
             className={cn(
-              "h-9 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-colors",
-              "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20",
+              "h-10 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all shadow-sm",
+              "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
               "disabled:cursor-not-allowed disabled:opacity-50",
-              "dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-indigo-400",
               error && "border-red-400 focus:border-red-400 focus:ring-red-400/20",
               leftIcon && "pl-9",
               className
@@ -43,8 +42,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
         </div>
-        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-        {hint && !error && <p className="text-xs text-gray-500 dark:text-zinc-400">{hint}</p>}
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        {hint && !error && <p className="text-xs text-zinc-500">{hint}</p>}
       </div>
     );
   }
@@ -62,7 +61,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor={inputId} className="text-sm font-medium text-zinc-300">
             {label}
           </label>
         )}
@@ -70,9 +69,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            "min-h-[80px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-colors resize-none",
-            "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20",
-            "dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100",
+            "min-h-[80px] w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all resize-none shadow-sm",
+            "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
             error && "border-red-400",
             className
           )}
@@ -98,7 +96,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor={inputId} className="text-sm font-medium text-zinc-300">
             {label}
             {props.required && <span className="ml-0.5 text-red-500">*</span>}
           </label>
@@ -107,9 +105,8 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            "h-9 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors",
-            "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20",
-            "dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100",
+            "h-10 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 transition-all shadow-sm",
+            "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
             error && "border-red-400",
             className
           )}

@@ -28,8 +28,14 @@ function createPrismaClient(): PrismaClient {
     );
   }
 
-  // Create a pg connection pool
-  const pool = new Pool({ connectionString });
+  // Create a pg connection pool optimized for Serverless / Vercel
+  // max: 1 is crucial for Vercel functions to prevent connection exhaustion.
+  // allowExitOnIdle lets the Node process exit if the connection is idle.
+  const pool = new Pool({
+    connectionString,
+    max: process.env.NODE_ENV === "production" ? 1 : 10,
+    allowExitOnIdle: true,
+  });
 
   // Wrap with the Prisma adapter
   const adapter = new PrismaPg(pool);

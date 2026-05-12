@@ -152,29 +152,65 @@ export function CompaniesActions({
         size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
-          {/* ── Company Info ──────────────────────────── */}
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-2 dark:border-zinc-800">
-            <Building2 className="h-4 w-4 text-indigo-500" />
-            <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-              Company Details
+          {/* ── Company Name (required) ─────────────── */}
+          <Input
+            label="Company Name"
+            required
+            placeholder="Google, Infosys, Razorpay…"
+            error={errors.companyName?.message}
+            {...register("companyName")}
+          />
+
+          {/* ── Point of Contact ──────────────────────── */}
+          <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+            <User className="h-4 w-4 text-blue-500" />
+            <span className="text-sm font-semibold text-zinc-300">
+              Point of Contact
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Contact Name"
+              placeholder="Priya Sharma"
+              {...register("pocName")}
+            />
+            <Select
+              label="Designation"
+              options={DESIGNATION_OPTIONS}
+              placeholder="Select designation"
+              {...register("pocDesignation")}
+            />
+            <Input
+              label="Email"
+              type="email"
+              placeholder="priya@company.com"
+              {...register("pocEmail")}
+            />
+            <Input
+              label="Phone"
+              placeholder="+91 98765 43210"
+              {...register("pocPhone")}
+            />
+            <div className="sm:col-span-2">
               <Input
-                label="Company Name"
-                required
-                placeholder="Google, Infosys, Razorpay…"
-                error={errors.companyName?.message}
-                {...register("companyName")}
+                label="LinkedIn Profile"
+                placeholder="https://linkedin.com/in/priya"
+                {...register("pocLinkedin")}
               />
             </div>
-            <Input
-              label="Domain / Website"
-              placeholder="acme.com"
-              {...register("domain")}
-            />
+          </div>
+
+          {/* ── Company Details (all optional) ─────────── */}
+          <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+            <Building2 className="h-4 w-4 text-blue-500" />
+            <span className="text-sm font-semibold text-zinc-300">
+              Company Details
+              <span className="ml-1.5 font-normal text-zinc-500">(optional)</span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select
               label="Company Type"
               options={COMPANY_TYPE_OPTIONS}
@@ -182,7 +218,12 @@ export function CompaniesActions({
               {...register("companyType")}
             />
             <Input
-              label="Website URL"
+              label="Industry"
+              placeholder="Software, Finance, Consulting…"
+              {...register("industry")}
+            />
+            <Input
+              label="Website"
               placeholder="https://acme.com"
               {...register("website")}
             />
@@ -191,72 +232,17 @@ export function CompaniesActions({
               placeholder="https://linkedin.com/company/acme"
               {...register("linkedin")}
             />
-            <Input
-              label="Industry"
-              placeholder="Software, Finance, Consulting…"
-              {...register("industry")}
-            />
             <Input label="City" placeholder="Mumbai" {...register("city")} />
-            <Input
-              label="State"
-              placeholder="Maharashtra"
-              {...register("state")}
-            />
-            <Input
-              label="Country"
-              defaultValue="India"
-              {...register("country")}
-            />
+            <Input label="State" placeholder="Maharashtra" {...register("state")} />
           </div>
 
           <Textarea
-            label="Initial Notes"
+            label="Notes"
             placeholder="How was this company found? Any context…"
             {...register("notes")}
           />
 
-          {/* ── Point of Contact ──────────────────────── */}
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-2 dark:border-zinc-800">
-            <User className="h-4 w-4 text-indigo-500" />
-            <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-              Point of Contact{" "}
-              <span className="font-normal text-gray-400">(optional — add HR / recruiter details)</span>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Input
-                label="Contact Name"
-                placeholder="Priya Sharma"
-                {...register("pocName")}
-              />
-            </div>
-            <Select
-              label="Designation"
-              options={DESIGNATION_OPTIONS}
-              placeholder="Select designation"
-              {...register("pocDesignation")}
-            />
-            <Input
-              label="Email ID"
-              type="email"
-              placeholder="priya@company.com"
-              {...register("pocEmail")}
-            />
-            <Input
-              label="Mobile Number"
-              placeholder="+91 98765 43210"
-              {...register("pocPhone")}
-            />
-            <Input
-              label="LinkedIn Profile"
-              placeholder="https://linkedin.com/in/priya"
-              {...register("pocLinkedin")}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-zinc-800">
+          <div className="flex justify-end gap-2 border-t border-zinc-800 pt-4">
             <Button variant="outline" type="button" onClick={handleClose}>
               Cancel
             </Button>
