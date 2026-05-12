@@ -10,7 +10,7 @@ import { Input, Textarea, Select } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import type { SessionPayload } from "@/lib/auth";
+
 
 const BRANCH_OPTIONS = [
   { value: "CSE", label: "Computer Science" },
@@ -29,7 +29,7 @@ const BATCH_OPTIONS = Array.from({ length: currentYear + 4 - 2008 + 1 }, (_, i) 
   return { value: String(year), label: String(year) };
 });
 
-export function AlumniActions({ session }: { session: SessionPayload | null }) {
+export function AlumniActions() {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 

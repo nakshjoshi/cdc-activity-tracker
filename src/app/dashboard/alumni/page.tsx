@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+
 import Link from "next/link";
+import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ALUMNI_STATUS_CONFIG, formatDate, getInitials } from "@/lib/utils";
-import { GraduationCap, ExternalLink, Heart, Users } from "lucide-react";
+import { ALUMNI_STATUS_CONFIG, getInitials } from "@/lib/utils";
+import { ExternalLink, Heart } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { AlumniActions } from "./alumni-actions";
@@ -19,11 +20,56 @@ export default async function AlumniPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const session = await getSession();
   const params = await searchParams;
   const page = parseInt(params.page ?? "1");
   const pageSize = 20;
 
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 text-xl font-bold text-zinc-100">
+            Alumni Outreach
+          </h1>
+          <p className="mt-0.5 text-sm text-zinc-500">Manage alumni connections</p>
+        </div>
+        <Suspense fallback={<Button disabled>Add Alumni</Button>}>
+          <AlumniActions />
+        </Suspense>
+      </div>
+
+      {/* Filters */}
+      <FilterBar
+        paramKey="status"
+        baseUrl="/dashboard/alumni"
+        activeClass="bg-orange-600 text-white"
+        options={[
+          { label: "All", value: "" },
+          { label: "Not Contacted", value: "NOT_CONTACTED" },
+          { label: "Contacted", value: "CONTACTED" },
+          { label: "Interested", value: "INTERESTED" },
+          { label: "Referred", value: "REFERRED" },
+        ]}
+      />
+
+      <Suspense fallback={<AlumniTableSkeleton />}>
+        <AlumniTableServer params={params} page={page} pageSize={pageSize} />
+      </Suspense>
+    </div>
+  );
+}
+
+// ─── Async Component for Suspense ──────────────────────────────────────────
+
+async function AlumniTableServer({
+  params,
+  page,
+  pageSize,
+}: {
+  params: SearchParams;
+  page: number;
+  pageSize: number;
+}) {
   const where = {
     isDeleted: false,
     ...(params.status && { currentStatus: params.status as never }),
@@ -54,135 +100,138 @@ export default async function AlumniPage({
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold text-zinc-100">
-            Alumni Outreach
-          </h1>
-          <p className="mt-0.5 text-sm text-zinc-500">{total} alumni in database</p>
-        </div>
-        <AlumniActions session={session} />
+    <Card className="overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-zinc-800">
+          <thead>
+            <tr className="bg-zinc-800/50">
+              {["Alumni", "Batch / Branch", "Current Company", "Status", "Willing", "Activities", "Coordinator"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  {h}
+                </th>
+              ))}
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800">
+            {alumni.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-16 text-center text-sm text-zinc-500">
+                  No alumni found. Add the first one!
+                </td>
+              </tr>
+            ) : (
+              alumni.map((a) => {
+                const statusConfig = ALUMNI_STATUS_CONFIG[a.currentStatus];
+                return (
+                  <tr key={a.id} className="group hover:bg-zinc-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-bold text-white">
+                          {getInitials(a.name)}
+                        </div>
+                        <div>
+                          <Link
+                            href={`/dashboard/alumni/${a.id}`}
+                            className="text-sm font-semibold text-zinc-100 hover:text-orange-400"
+                          >
+                            {a.name}
+                          </Link>
+                          {a.email && <p className="text-xs text-zinc-500">{a.email}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-zinc-100">{a.batch}</p>
+                      <p className="text-xs text-zinc-500">{a.branch}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {a.currentCompany ? (
+                        <div>
+                          <p className="text-sm text-zinc-100">{a.currentCompany}</p>
+                          {a.designation && <p className="text-xs text-zinc-500">{a.designation}</p>}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-zinc-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig.color} ${statusConfig.bg}`}>
+                        {statusConfig.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {a.willingToHelp ? (
+                        <Heart className="h-4 w-4 fill-red-400 text-red-400" />
+                      ) : (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="rounded-full bg-orange-900/30 px-2 py-0.5 text-xs font-medium text-orange-400">
+                        {a._count.activities}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-zinc-500">
+                      {a.assignedCoordinator?.name ?? <span className="text-zinc-600">—</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/dashboard/alumni/${a.id}`}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Button variant="ghost" size="icon">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Filters */}
-      <FilterBar
-        paramKey="status"
-        baseUrl="/dashboard/alumni"
-        activeClass="bg-orange-600 text-white"
-        options={[
-          { label: "All", value: "" },
-          { label: "Not Contacted", value: "NOT_CONTACTED" },
-          { label: "Contacted", value: "CONTACTED" },
-          { label: "Interested", value: "INTERESTED" },
-          { label: "Referred", value: "REFERRED" },
-        ]}
-      />
+      {/* Pagination */}
+      <div className="px-4 pb-4">
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          baseUrl="/dashboard/alumni"
+          searchParams={{ status: params.status, search: params.search, batch: params.batch }}
+        />
+      </div>
+    </Card>
+  );
+}
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-zinc-800">
-            <thead>
-              <tr className="bg-zinc-800/50">
-                {["Alumni", "Batch / Branch", "Current Company", "Status", "Willing", "Activities", "Coordinator"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    {h}
-                  </th>
+function AlumniTableSkeleton() {
+  return (
+    <Card className="overflow-hidden animate-pulse">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-zinc-800">
+          <thead>
+            <tr className="bg-zinc-800/50">
+              {[...Array(7)].map((_, i) => (
+                <th key={i} className="px-4 py-3"><div className="h-4 w-24 bg-zinc-800 rounded" /></th>
+              ))}
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800">
+            {[...Array(8)].map((_, i) => (
+              <tr key={i}>
+                {[...Array(7)].map((_, j) => (
+                  <td key={j} className="px-4 py-4"><div className="h-4 w-32 bg-zinc-800 rounded" /></td>
                 ))}
-                <th className="px-4 py-3" />
+                <td className="px-4 py-4"><div className="h-8 w-8 bg-zinc-800 rounded" /></td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
-              {alumni.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-sm text-zinc-500">
-                    No alumni found. Add the first one!
-                  </td>
-                </tr>
-              ) : (
-                alumni.map((a) => {
-                  const statusConfig = ALUMNI_STATUS_CONFIG[a.currentStatus];
-                  return (
-                    <tr key={a.id} className="group hover:bg-zinc-800/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-bold text-white">
-                            {getInitials(a.name)}
-                          </div>
-                          <div>
-                            <Link
-                              href={`/dashboard/alumni/${a.id}`}
-                              className="text-sm font-semibold text-zinc-100 hover:text-orange-400"
-                            >
-                              {a.name}
-                            </Link>
-                            {a.email && <p className="text-xs text-zinc-500">{a.email}</p>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-zinc-100">{a.batch}</p>
-                        <p className="text-xs text-zinc-500">{a.branch}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        {a.currentCompany ? (
-                          <div>
-                            <p className="text-sm text-zinc-100">{a.currentCompany}</p>
-                            {a.designation && <p className="text-xs text-zinc-500">{a.designation}</p>}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-zinc-600">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig.color} ${statusConfig.bg}`}>
-                          {statusConfig.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {a.willingToHelp ? (
-                          <Heart className="h-4 w-4 fill-red-400 text-red-400" />
-                        ) : (
-                          <span className="text-zinc-600">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="rounded-full bg-orange-900/30 px-2 py-0.5 text-xs font-medium text-orange-400">
-                          {a._count.activities}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-500">
-                        {a.assignedCoordinator?.name ?? <span className="text-zinc-600">—</span>}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/dashboard/alumni/${a.id}`}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Button variant="ghost" size="icon">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="px-4 pb-4">
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            baseUrl="/dashboard/alumni"
-            searchParams={{ status: params.status, search: params.search, batch: params.batch }}
-          />
-        </div>
-      </Card>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }
 

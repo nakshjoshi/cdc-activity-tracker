@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { FilterBar } from "@/components/ui/filter-bar";
@@ -33,35 +34,8 @@ export default async function TasksPage({
   const page = parseInt(params.page ?? "1");
   const pageSize = 20;
 
-  // Build filter
-  const where: any = {};
-
-  // Tab filter
-  if (tab === "my") {
-    where.assignedToId = session.userId;
-  } else if (tab === "assigned") {
-    where.assignedById = session.userId;
-  }
-  // "all" tab = no user filter
-
-  // Status filter
-  if (statusFilter) {
-    where.status = statusFilter;
-  }
-
-  const [tasks, total, users, companies] = await Promise.all([
-    prisma.task.findMany({
-      where,
-      take: pageSize,
-      skip: (page - 1) * pageSize,
-      orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }, { createdAt: "desc" }],
-      include: {
-        assignedTo: { select: { id: true, name: true } },
-        assignedBy: { select: { id: true, name: true } },
-        company: { select: { id: true, companyName: true } },
-      },
-    }),
-    prisma.task.count({ where }),
+  // Fetch only what's needed for the shell
+  const [users, companies] = await Promise.all([
     prisma.user.findMany({
       where: { isActive: true },
       select: { id: true, name: true },
@@ -75,13 +49,6 @@ export default async function TasksPage({
     }),
   ]);
 
-  const totalPages = Math.ceil(total / pageSize);
-
-  // Count my pending for the badge
-  const myPendingCount = tab === "my"
-    ? tasks.filter((t) => t.status === "PENDING" || t.status === "IN_PROGRESS").length
-    : 0;
-
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -89,7 +56,6 @@ export default async function TasksPage({
         <div>
           <h1 className="text-xl font-bold text-zinc-100">Tasks</h1>
           <p className="mt-0.5 text-sm text-zinc-500">
-            {total} task{total !== 1 ? "s" : ""} ·
             Assign and track work across the team
           </p>
         </div>
@@ -121,7 +87,59 @@ export default async function TasksPage({
         />
       </div>
 
-      {/* Tasks list */}
+      <Suspense fallback={<TasksListSkeleton />}>
+        <TasksServerList tab={tab} statusFilter={statusFilter} page={page} pageSize={pageSize} userId={session.userId} users={users} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function TasksServerList({
+  tab,
+  statusFilter,
+  page,
+  pageSize,
+  userId,
+  users,
+}: {
+  tab: string;
+  statusFilter: string;
+  page: number;
+  pageSize: number;
+  userId: string;
+  users: { id: string; name: string }[];
+}) {
+  const where: any = {};
+
+  if (tab === "my") {
+    where.assignedToId = userId;
+  } else if (tab === "assigned") {
+    where.assignedById = userId;
+  }
+
+  if (statusFilter) {
+    where.status = statusFilter;
+  }
+
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+      include: {
+        assignedTo: { select: { id: true, name: true } },
+        assignedBy: { select: { id: true, name: true } },
+        company: { select: { id: true, companyName: true } },
+      },
+    }),
+    prisma.task.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  return (
+    <>
       {tasks.length === 0 ? (
         <Card className="py-12 text-center">
           <ClipboardCheck className="mx-auto h-10 w-10 text-zinc-600" />
@@ -137,7 +155,6 @@ export default async function TasksPage({
             return (
               <Card key={task.id} className={`p-4 ${isOverdue ? "border-red-900/40" : ""}`}>
                 <div className="flex items-start gap-3">
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <PriorityBadge priority={task.priority} />
@@ -155,7 +172,6 @@ export default async function TasksPage({
                       <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{task.description}</p>
                     )}
 
-                    {/* Meta row */}
                     <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500">
                       {task.company && (
                         <Link
@@ -175,13 +191,12 @@ export default async function TasksPage({
                       <span>{task.assignedBy.name} → {task.assignedTo.name}</span>
                     </div>
 
-                    {/* Action buttons */}
                     <div className="mt-2">
                       <TaskActionsRow
                         taskId={task.id}
                         currentStatus={task.status}
                         users={users}
-                        currentUserId={session.userId}
+                        currentUserId={userId}
                       />
                     </div>
                   </div>
@@ -193,6 +208,23 @@ export default async function TasksPage({
       )}
 
       <Pagination currentPage={page} totalPages={totalPages} baseUrl="/dashboard/tasks" />
+    </>
+  );
+}
+
+function TasksListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[...Array(5)].map((_, i) => (
+        <Card key={i} className="p-4 animate-pulse">
+          <div className="h-4 w-1/3 bg-zinc-800 rounded mb-2" />
+          <div className="h-3 w-2/3 bg-zinc-800 rounded mb-4" />
+          <div className="flex gap-4">
+            <div className="h-3 w-24 bg-zinc-800 rounded" />
+            <div className="h-3 w-24 bg-zinc-800 rounded" />
+          </div>
+        </Card>
+      ))}
     </div>
   );
 }

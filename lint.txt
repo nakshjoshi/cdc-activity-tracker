@@ -1,0 +1,131 @@
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/activities/page.tsx
+  3:10  warning  'Activity' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/alumni/[id]/alumni-detail-actions.tsx
+  315:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/alumni/[id]/alumni-detail-actions.tsx:315:5
+  313 |   useEffect(() => {
+  314 |     if (!open) return;
+> 315 |     setSelectedId(currentAssigneeId ?? "");
+      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  316 |     getCoordinatorsAction().then((res) => {
+  317 |       if (res.users) setCoordinators(res.users);
+  318 |     });  react-hooks/set-state-in-effect
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/alumni/page.tsx
+   7:31  warning  'Users' is defined but never used             @typescript-eslint/no-unused-vars
+  22:9   warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/[id]/company-detail-actions.tsx
+  533:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/[id]/company-detail-actions.tsx:533:5
+  531 |   useEffect(() => {
+  532 |     if (!open) return;
+> 533 |     setSelectedId(currentAssigneeId ?? "");
+      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  534 |     getCoordinatorsAction().then((res) => {
+  535 |       if (res.users) setCoordinators(res.users);
+  536 |     });  react-hooks/set-state-in-effect
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/[id]/page.tsx
+   7:22  warning  'STATUS_CONFIG' is defined but never used  @typescript-eslint/no-unused-vars
+   7:37  warning  'ROLE_CONFIG' is defined but never used    @typescript-eslint/no-unused-vars
+   9:3   warning  'Building2' is defined but never used      @typescript-eslint/no-unused-vars
+  10:3   warning  'Mail' is defined but never used           @typescript-eslint/no-unused-vars
+  10:9   warning  'Phone' is defined but never used          @typescript-eslint/no-unused-vars
+  10:16  warning  'Star' is defined but never used           @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/companies-actions.tsx
+  68:3  warning  'session' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  80:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/companies-actions.tsx:80:7
+  78 |   useEffect(() => {
+  79 |     if (searchParams.get("add") === "1") {
+> 80 |       setOpen(true);
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  81 |     }
+  82 |   }, [searchParams]);
+  83 |  react-hooks/set-state-in-effect
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/companies/page.tsx
+  9:10  warning  'Building2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/followups/page.tsx
+  20:9  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/page.tsx
+  332:9  warning  'PRIORITY_COLOR' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/tasks/page.tsx
+  37:16  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  81:9   warning  'myPendingCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/dashboard/tasks/task-status.tsx
+  13:35  warning  'Plus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/app/login/page.tsx
+  8:10  warning  'Input' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/components/layout/nav-config.ts
+  10:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/components/layout/sidebar.tsx
+  18:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/components/layout/sidebar.tsx:18:5
+  16 |   // Close mobile sidebar on route change
+  17 |   useEffect(() => {
+> 18 |     setMobileOpen(false);
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |   }, [pathname]);
+  20 |
+  21 |   const filteredItems = NAV_ITEMS.filter(  react-hooks/set-state-in-effect
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/components/layout/topbar.tsx
+  42:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/nakshjoshi/Desktop/tnp-tracker/src/components/layout/topbar.tsx:42:5
+  40 |   // Close mobile nav on route change
+  41 |   useEffect(() => {
+> 42 |     setMobileNavOpen(false);
+     |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |   }, [pathname]);
+  44 |
+  45 |   const roleConfig = ROLE_CONFIG[user.role];  react-hooks/set-state-in-effect
+
+✖ 23 problems (7 errors, 16 warnings)
+

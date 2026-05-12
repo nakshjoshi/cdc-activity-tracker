@@ -312,6 +312,7 @@ function AssignCoordinatorModal({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedId(currentAssigneeId ?? "");
     getCoordinatorsAction().then((res) => {
       if (res.users) setCoordinators(res.users);

@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatDate, ALUMNI_STATUS_CONFIG, getInitials } from "@/lib/utils";
+import { ALUMNI_STATUS_CONFIG, getInitials } from "@/lib/utils";
 import {
-  Globe, Link2, MapPin, Tag, User,
-  Mail, Phone, Star, Clock, ArrowRight, Building2, GraduationCap, Heart, CheckCircle2
+  Link2, MapPin, User,
+  Mail, Phone, ArrowRight, Building2, Heart, CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -171,7 +171,7 @@ export default async function AlumniDetailPage({
               </div>
             </CardHeader>
             <CardContent className="pt-2">
-              <ActivityTimeline activities={alumni.activities as any} />
+              <ActivityTimeline activities={alumni.activities as unknown as Parameters<typeof ActivityTimeline>[0]["activities"]} />
             </CardContent>
           </Card>
         </div>
